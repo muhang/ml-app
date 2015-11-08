@@ -1,9 +1,6 @@
 'use strict';
 
 angular.module('game', [
-  'game.board',
-  'game.cell',
-  'game.main',
-  'game.constants',
-  'game.solo.endless'
+    'game.solo.endless',
+    'game.board'
 ]);
