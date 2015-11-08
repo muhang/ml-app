@@ -1,0 +1,15 @@
+<ion-view view-title="Puzzle">
+  <ion-content class="padding">
+    <h2>Puzzle Mode</h2>
+    <div ng-controller="DocsTimeCtrl">
+      Date Format: <input ng-model="format">
+      <hr>
+      Current time is: <span my-current-time="format"></span>
+    </div>
+    <ion-list>
+      <ion-item ng-repeat="item in items">
+        <h2>{{item.title}}</h2>
+      </ion-item>
+    </ion-list>
+  </ion-content>
+</ion-view>
