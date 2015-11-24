@@ -24,6 +24,10 @@ angular.module('game.cell', [])
             return this.type === 'active';
         };
 
+        Cell.prototype.isSelected = function () {
+            return this.selected === true;
+        };
+
         function CellGenerator () {}
 
         CellGenerator.prototype.generateEmptyCell = function (x, y) {
@@ -37,4 +41,6 @@ angular.module('game.cell', [])
         CellGenerator.prototype.generateBlockCell = function (x, y) {
             return new Cell(x, y, 'block');
         };
+
+        return new CellGenerator();
     });
