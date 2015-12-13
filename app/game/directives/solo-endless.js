@@ -20,9 +20,14 @@ angular.module('game.solo.endless', [
                     this.fps = 60;
                 }
 
+
                 Game.prototype.run = function () {
                     var self = this;
                     var windowWidth = window.innerWidth;
+
+                    pubsub.sub("match", function () {
+                        self.score += 50;
+                    });
 
                     this.canvas = document.getElementById('main-canvas');
                     this.canvas.width = windowWidth - 20;
@@ -41,6 +46,7 @@ angular.module('game.solo.endless', [
 
                             // tick
                             self.timePlayed++;
+                            self.score += 10;
                         }
                     }, 1000);
 

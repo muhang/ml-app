@@ -77,6 +77,7 @@ angular.module('game.board', [
             cell = cell[0];
 
             if (cell.type !== 'active') {
+                this.removeSelection();
                 return;
             }
             
@@ -88,8 +89,6 @@ angular.module('game.board', [
             cell.selected = true;
 
             var selectedCells = this.getSelectedCells();
-
-            console.log('selectedCells', selectedCells);
 
             if (selectedCells.length < 2) {
                 return;
@@ -107,6 +106,10 @@ angular.module('game.board', [
             cellA.successState = true;
 
             cellB.successState = true;
+
+            var matchEvent = new CustomEvent('match', { cells: [ cellA, cellB ] });
+
+            pubsub.pub("match");
             
             var pathCells = [];
             
@@ -132,8 +135,6 @@ angular.module('game.board', [
                         if (idx === 0) {
                             cellA.type = 'empty';
                         }
-
-                        console.log('adding', pathCells[idx]);
                         pathCells[idx].inPath = true;
                         
                     }, addDelay);
@@ -143,7 +144,6 @@ angular.module('game.board', [
                             cellB.type = 'empty';
                         }
 
-                        console.log('removing', pathCells[idx]);
                         pathCells[idx].inPath = false;
                         pathCells[idx].pathNumber = 0;
                     }, removeDelay);
