@@ -19,7 +19,6 @@ angular.module('game.board', [
 
         Board.prototype.initializeGrid = function () {
             var matrix = [];
-            console.log('width', this.width, 'height', this.height);
             for (var i = 0; i < this.width; i++) {
                 var mRow = [];
 
@@ -57,8 +56,10 @@ angular.module('game.board', [
                 status: randomType,
                 type: 'active'
             });
+        };
 
-            console.log(randomEmptyCell);
+        Board.prototype.activeToEmpty = function (cell) {
+            cell.type = 'empty'; 
         };
 
         Board.prototype.modifyCellByLocation = function (x, y, props) {
@@ -71,12 +72,94 @@ angular.module('game.board', [
             }
         };
 
-        Board.prototype.removeSelectedCells = function () {
+        Board.prototype.handleSelection = function (x, y) {
+            var cell = this.getCell(x, y);
+            cell = cell[0];
+
+            if (cell.type !== 'active') {
+                return;
+            }
+            
+            if (cell.selected) {
+                cell.selected = false;
+                return;
+            }
+
+            cell.selected = true;
+
+            var selectedCells = this.getSelectedCells();
+
+            console.log('selectedCells', selectedCells);
+
+            if (selectedCells.length < 2) {
+                return;
+            }
+
+            if (!this.matchCells(selectedCells[0], selectedCells[1])) {
+                this.matchFailure(selectedCells[0], selectedCells[1]);
+                return;
+            }
+
+            this.matchSuccess(selectedCells[0], selectedCells[1]);
+        };
+
+        Board.prototype.matchSuccess = function (cellA, cellB) {
+            cellA.successState = true;
+            cellA.type = 'empty';
+
+            cellB.successState = true;
+            cellB.type = 'empty';
+            
+            var pathCells = [];
+            
+            for (var i = 0; i < this.cells.length; i++) {
+                if (this.cells[i].pathNumber !== 0) {
+                    pathCells.push(this.cells[i]);
+                }
+            } 
+
+            pathCells = pathCells.sort(function (a, b) { return a.pathNumber - b.pathNumber; });
+            
+            for (var j = 0; j < pathCells.length; j++) {
+                (function (idx) {
+                    setTimeout(function () {
+                        pathCells[idx].inPath = false;
+                    }, 400);
+                })(j)
+            }
+
+            this.removeSelection(); 
+        };
+
+        Board.prototype.matchFailure = function (cellA, cellB) {
+            cellA.errorState = true;
+            cellB.errorState = true;
+
+            setTimeout(function () {
+                cellA.errorState = false;
+                cellB.errorState = false;
+            }, 1000);
+
+            this.removeSelection(); 
+        };
+
+        Board.prototype.removeSelection = function () {
             for (var i = 0; i < this.cells.length; i++) {
                 if (this.cells[i].selected) {
                     this.cells[i].selected = false;
                 }
             }
+        };
+
+        Board.prototype.getSelectedCells = function () {
+            var ret = [];
+            for (var i = 0; i < this.cells.length; i++) {
+                if (this.cells[i].selected) {
+                    ret.push(this.cells[i]);
+                }
+            }
+
+            return ret;
         };
 
         Board.prototype.getActiveCells = function () {
@@ -120,6 +203,7 @@ angular.module('game.board', [
         Board.prototype.matchCells = function (cell1, cell2) {
             return cell1.isSelectable() && cell2.isSelectable()
                 && cell1.type === cell2.type
+                && cell1.status === cell2.status
                 && this.getPath(cell1, cell2);
         };
 

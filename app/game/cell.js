@@ -10,6 +10,8 @@ angular.module('game.cell', [])
             this.selected = false;
             this.inPath = false;
             this.pathNumber = 0;
+            this.successState = false;
+            this.errorState = false;
         }
 
         Cell.prototype.changeState = function (type) {

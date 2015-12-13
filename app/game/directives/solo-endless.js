@@ -26,7 +26,9 @@ angular.module('game.solo.endless', [
 
                     this.canvas = document.getElementById('main-canvas');
                     this.canvas.width = windowWidth - 20;
-                    this.canvas.height = this.canvas.width;
+                    this.canvas.height = this.canvas.width + 150;
+
+                    this.handleEvents();
 
                     // set timer
                     setInterval(function () {
@@ -48,7 +50,33 @@ angular.module('game.solo.endless', [
                         var ctx = self.canvas.getContext('2d');
                         ctx.clearRect(0, 0, self.canvas.offsetHeight, self.canvas.offsetHeight);
                         self.drawBoard();
+                        self.drawUI();
                     }, 1000, this.fps);
+                };
+
+                Game.prototype.drawUI = function () {
+                    var self = this;
+
+                    if (!this.canvas.getContext('2d')) {
+                        return;
+                    }
+
+                    var ctx = this.canvas.getContext('2d');
+
+                    var topOffset = this.canvas.width + 48;
+
+                    ctx.font = "20px sans-serif";
+                    ctx.fillStyle = "#3b3b3b";
+                    ctx.strokeStyle = "#3b3b3b";
+
+                    ctx.fillText("TIME", 20, topOffset);
+                    ctx.fillText("SCORE", this.canvas.width - 100, topOffset);
+                    ctx.fillText("EXIT", 20, this.canvas.height);
+                    ctx.fillText("PAUSE", this.canvas.width - 100, this.canvas.height);
+
+                    ctx.font = "16px sans-serif";
+                    ctx.fillText(this.timePlayed, 20, topOffset + 35);
+                    ctx.fillText(this.score, this.canvas.width - 100, topOffset + 35);
                 };
 
                 Game.prototype.drawBoard = function () {
@@ -81,6 +109,43 @@ angular.module('game.solo.endless', [
                     }
                 };
 
+                Game.prototype.handleEvents = function () {
+                    var self = this;
+                    
+                    this.canvas.addEventListener('touchstart', function (event) {
+                        event.preventDefault();
+
+                        var canvasLeftOffset = 10, 
+                            canvasTopOffset = 53;
+
+                        var x = event.touches[0].pageX - canvasLeftOffset,
+                            y = event.touches[0].pageY - canvasTopOffset;
+
+                        if (y < self.canvas.width) {
+                            self.handleBoardClick(x, y);
+                        } else {
+                            self.handleUIClick(x, y);
+                        }
+                    });
+                };
+
+                Game.prototype.handleBoardClick = function (x, y) {
+                    console.log('board click');
+
+                    var CELL_WIDTH = this.canvas.width / 8;
+                    var CELL_HEIGHT = this.canvas.width / 8;
+
+                    var cellX = Math.floor(x / CELL_WIDTH),
+                        cellY = Math.floor(y / CELL_HEIGHT);
+
+                    this.board.handleSelection(cellX, cellY);
+                };
+
+                Game.prototype.handleUIClick = function (x, y) {
+                    console.log('ui click');
+
+                };
+
                 var getColorForType = function (type) {
                     var hash = {
                         1: '#E53935',
@@ -99,8 +164,6 @@ angular.module('game.solo.endless', [
                             color = hash[num];
                         }
                     }
-
-                    console.log(color);
 
                     return color;
                 };
