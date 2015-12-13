@@ -51,7 +51,7 @@ angular.module('game.solo.endless', [
                         ctx.clearRect(0, 0, self.canvas.offsetHeight, self.canvas.offsetHeight);
                         self.drawBoard();
                         self.drawUI();
-                    }, 1000, this.fps);
+                    }, 1000 / this.fps);
                 };
 
                 Game.prototype.drawUI = function () {
@@ -95,17 +95,23 @@ angular.module('game.solo.endless', [
                         // get starting pixel location based on coordinate values
                         var startX = cell.x * CELL_WIDTH;
                         var startY = cell.y * CELL_HEIGHT;
-                        
-                        if (cell.type === 'active')  {
+
+                        if (cell.selected) {
+                            ctx.fillStyle = "#14e715"; 
+                        } else if (cell.type === 'active')  {
                             ctx.fillStyle = getColorForType(cell.status);
-                            ctx.fillRect(startX, startY, CELL_WIDTH, CELL_HEIGHT);
                         } else if (cell.type === 'empty') {
                             ctx.fillStyle = "#f4f5f4";
-                            ctx.fillRect(startX, startY, CELL_WIDTH, CELL_HEIGHT);
-                            ctx.strokeStyle = "#aaa";
-                            ctx.lineWidth = 1;
-                            ctx.strokeRect(startX, startY, CELL_WIDTH, CELL_HEIGHT);
                         }
+
+                        if (cell.inPath) {
+                            ctx.fillStyle = "#000";
+                        }
+
+                        ctx.fillRect(startX, startY, CELL_WIDTH, CELL_HEIGHT);
+                        ctx.strokeStyle = "#aaa";
+                        ctx.lineWidth = 1;
+                        ctx.strokeRect(startX, startY, CELL_WIDTH, CELL_HEIGHT);
                     }
                 };
 
@@ -130,7 +136,6 @@ angular.module('game.solo.endless', [
                 };
 
                 Game.prototype.handleBoardClick = function (x, y) {
-                    console.log('board click');
 
                     var CELL_WIDTH = this.canvas.width / 8;
                     var CELL_HEIGHT = this.canvas.width / 8;
@@ -142,7 +147,6 @@ angular.module('game.solo.endless', [
                 };
 
                 Game.prototype.handleUIClick = function (x, y) {
-                    console.log('ui click');
 
                 };
 

@@ -105,10 +105,8 @@ angular.module('game.board', [
 
         Board.prototype.matchSuccess = function (cellA, cellB) {
             cellA.successState = true;
-            cellA.type = 'empty';
 
             cellB.successState = true;
-            cellB.type = 'empty';
             
             var pathCells = [];
             
@@ -120,11 +118,35 @@ angular.module('game.board', [
 
             pathCells = pathCells.sort(function (a, b) { return a.pathNumber - b.pathNumber; });
             
+            var addDelay = 0;
+            var delayConstant = 100;
+            var timeInPath = delayConstant * 2.5;
+
             for (var j = 0; j < pathCells.length; j++) {
                 (function (idx) {
+                    addDelay += delayConstant; 
+
+                    var removeDelay = addDelay + timeInPath;
+
                     setTimeout(function () {
+                        if (idx === 0) {
+                            cellA.type = 'empty';
+                        }
+
+                        console.log('adding', pathCells[idx]);
+                        pathCells[idx].inPath = true;
+                        
+                    }, addDelay);
+
+                    setTimeout(function () {
+                        if (idx === pathCells.length - 1) {
+                            cellB.type = 'empty';
+                        }
+
+                        console.log('removing', pathCells[idx]);
                         pathCells[idx].inPath = false;
-                    }, 400);
+                        pathCells[idx].pathNumber = 0;
+                    }, removeDelay);
                 })(j)
             }
 
@@ -192,7 +214,6 @@ angular.module('game.board', [
 
             for (var i = 0; i < path.length; i++) {
                 this.modifyCellByLocation(path[i][0], path[i][1], {
-                    inPath: true,
                     pathNumber: i+1
                 });
             }
