@@ -56,10 +56,13 @@ angular.module('game.board', [
                 status: randomType,
                 type: 'active'
             });
+
+            this.grid.setWalkableAt(randomEmptyCell.x, randomEmptyCell.y, false);
         };
 
         Board.prototype.activeToEmpty = function (cell) {
             cell.type = 'empty'; 
+            this.grid.setWalkableAt(cell.x, cell.y, true);
         };
 
         Board.prototype.modifyCellByLocation = function (x, y, props) {
@@ -103,37 +106,40 @@ angular.module('game.board', [
         };
 
         Board.prototype.matchSuccess = function (cellA, cellB) {
+            var self = this;
+            
+            // successState remains true until path animation completes
             cellA.successState = true;
-
             cellB.successState = true;
 
+            // publish match event
             var matchEvent = new CustomEvent('match', { cells: [ cellA, cellB ] });
-
             pubsub.pub("match");
             
+            // get array of cells in path
             var pathCells = [];
-            
             for (var i = 0; i < this.cells.length; i++) {
                 if (this.cells[i].pathNumber !== 0) {
                     pathCells.push(this.cells[i]);
                 }
             } 
 
+            // sort cells in path by index in path
             pathCells = pathCells.sort(function (a, b) { return a.pathNumber - b.pathNumber; });
             
             var addDelay = 0;
             var delayConstant = 100;
             var timeInPath = delayConstant * 2.5;
 
+            // animate path
             for (var j = 0; j < pathCells.length; j++) {
                 (function (idx) {
                     addDelay += delayConstant; 
-
                     var removeDelay = addDelay + timeInPath;
 
                     setTimeout(function () {
                         if (idx === 0) {
-                            cellA.type = 'empty';
+                            self.activeToEmpty(cellA);
                         }
                         pathCells[idx].inPath = true;
                         
@@ -141,11 +147,14 @@ angular.module('game.board', [
 
                     setTimeout(function () {
                         if (idx === pathCells.length - 1) {
-                            cellB.type = 'empty';
+                            self.activeToEmpty(cellB);
                         }
 
                         pathCells[idx].inPath = false;
                         pathCells[idx].pathNumber = 0;
+
+                        cellA.successState = false;
+                        cellB.successState = false;
                     }, removeDelay);
                 })(j)
             }
