@@ -54,8 +54,11 @@ angular.module('game.board', [
             }));
 
             this.modifyCellByLocation(randomEmptyCell.x, randomEmptyCell.y, {
-                type: randomType
+                status: randomType,
+                type: 'active'
             });
+
+            console.log(randomEmptyCell);
         };
 
         Board.prototype.modifyCellByLocation = function (x, y, props) {
