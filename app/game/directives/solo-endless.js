@@ -19,7 +19,7 @@ angular.module('game.solo.endless', [
                     this.paper = null;
                     this.fps = 60;
                     this.gameOver = false;
-                    this.generationInterval = 1500;
+                    this.generationInterval = 1000;
                 }
 
                 Game.prototype.run = function () {
@@ -48,15 +48,15 @@ angular.module('game.solo.endless', [
 
                     // make new active cell 
                     setInterval(function () {
-                        if (!self.paused && !self.gaveOver) {
+                        if (!self.paused && !self.gameOver) {
                             self.board.randomEmptyToActive();
                         }
                     }, this.generationInterval);
 
                     // auto-incrementing score for staying alive
                     setInterval(function () {
-                        if (this.board.isFull()) {
-                            this.gameOver = true;
+                        if (self.board.isFull()) {
+                            self.gameOver = true;
                         }
                         if (!self.paused && !self.gameOver) {
                             self.score += 1;
