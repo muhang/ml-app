@@ -16,7 +16,7 @@ angular.module('game.solo.endless', [
                     this.score = 0;
                     this.paused = false;
                     this.board = BoardFactory.makeEndlessBoard();
-                    this.canvas = null;
+                    this.paper = null;
                     this.fps = 60;
                     this.gameOver = false;
                     this.generationInterval = 1500;
@@ -30,11 +30,21 @@ angular.module('game.solo.endless', [
                         self.score += 10;
                     });
 
-                    this.canvas = document.getElementById('main-canvas');
-                    this.canvas.width = windowWidth - 20;
-                    this.canvas.height = this.canvas.width + 150;
+                    var cWidth = windowWidth - 20,
+                        cHeight = cWidth + 150;
 
-                    this.handleEvents();
+                    var canvas = document.getElementById('main-canvas');
+                    canvas.width = windowWidth - 20;
+                    canvas.height = canvas.width + 150;
+
+                    this.paper = new Raphael(canvas, cWidth, cHeight);
+
+
+
+                    //this.canvas.width = windowWidth - 20;
+                    //this.canvas.height = this.canvas.width + 150;
+
+                    //this.handleEvents();
 
                     // set timer
                     setInterval(function () {
@@ -45,7 +55,9 @@ angular.module('game.solo.endless', [
 
                     // make new active cell 
                     setInterval(function () {
-                        self.board.randomEmptyToActive();
+                        if (!self.paused && !self.gaveOver) {
+                            self.board.randomEmptyToActive();
+                        }
                     }, this.generationInterval);
 
                     // auto-incrementing score for staying alive
@@ -58,8 +70,9 @@ angular.module('game.solo.endless', [
                     // TODO intilaize event handlers
 
                     setInterval(function () {
-                        var ctx = self.canvas.getContext('2d');
-                        ctx.clearRect(0, 0, self.canvas.offsetHeight, self.canvas.offsetHeight);
+                        //var ctx = self.canvas.getContext('2d');
+                        //ctx.clearRect(0, 0, self.canvas.offsetHeight, self.canvas.offsetHeight);
+                        self.paper.clear();
                         self.drawBoard();
                         self.drawUI();
                     }, 1000 / this.fps);
@@ -67,59 +80,80 @@ angular.module('game.solo.endless', [
 
                 Game.prototype.drawUI = function () {
                     var self = this;
+                    var topOffset = this.paper.width + 48;
 
-                    if (!this.canvas.getContext('2d')) {
-                        return;
-                    }
+                    var time = this.paper.text(35, topOffset, "TIME");
+                    time.attr({ "font-size": 20, "font-family": "Helvetica Neue, Helvetica, Arial, sans-serif" });
 
-                    var ctx = this.canvas.getContext('2d');
+                    var exit = this.paper.text(35, this.paper.height - 10, "EXIT");
+                    exit.attr({ "font-size": 20, "font-family": "Helvetica Neue, Helvetica, Arial, sans-serif" });
 
-                    var topOffset = this.canvas.width + 48;
+                    var timePlayed = this.paper.text(35, topOffset + 35, this.timePlayed);
+                    timePlayed.attr({ "font-size": 16, "font-family": "Helvetica Neue, Helvetica, Arial, sans-serif" });
 
-                    ctx.font = "20px sans-serif";
-                    ctx.fillStyle = "#3b3b3b";
-                    ctx.strokeStyle = "#3b3b3b";
+                    var score = this.paper.text(this.paper.width - 50, topOffset, "SCORE");
+                    score.attr({ "font-size": 20, "font-family": "Helvetica Neue, Helvetica, Arial, sans-serif" });
 
-                    ctx.fillText("TIME", 20, topOffset);
-                    ctx.fillText("SCORE", this.canvas.width - 100, topOffset);
+                    var pausedText = this.paused ? "RESUME" : "PAUSED";
+                    var paused = this.paper.text(this.paper.width -50, this.paper.height - 10, pausedText);
+                    paused.attr({ "font-size": 20, "font-family": "Helvetica Neue, Helvetica, Arial, sans-serif" });
+
+                    paused.touchstart(function (e) {
+                        e.preventDefault();
+                        self.paused = !self.paused;
+                    });
+
+                    var scoreValue = this.paper.text(this.paper.width - 50, topOffset + 35, this.score);
+                    scoreValue.attr({ "font-size": 16, "font-family": "Helvetica Neue, Helvetica, Arial, sans-serif" });
+
+                    //if (!this.canvas.getContext('2d')) {
+                        //return;
+                    //}
+
+                    //var ctx = this.canvas.getContext('2d');
+
+                    //var topOffset = this.canvas.width + 48;
+
+                    //ctx.font = "20px sans-serif";
+                    //ctx.fillStyle = "#3b3b3b";
+                    //ctx.strokeStyle = "#3b3b3b";
+
+                    //ctx.fillText("TIME", 20, topOffset);
+                    //ctx.fillText("SCORE", this.canvas.width - 100, topOffset);
 
 
-                    ctx.fillText("EXIT", 20, this.canvas.height);
-                    var pauseText = this.paused ? "RESUME" : "PAUSE";
-                    ctx.fillText(pauseText, this.canvas.width - 100, this.canvas.height);
+                    //ctx.fillText("EXIT", 20, this.canvas.height);
+                    //var pauseText = this.paused ? "RESUME" : "PAUSE";
+                    //ctx.fillText(pauseText, this.canvas.width - 100, this.canvas.height);
 
-                    ctx.font = "16px sans-serif";
-                    ctx.fillText(this.timePlayed, 20, topOffset + 35);
-                    ctx.fillText(this.score, this.canvas.width - 100, topOffset + 35);
+                    //ctx.font = "16px sans-serif";
+                    //ctx.fillText(this.timePlayed, 20, topOffset + 35);
+                    //ctx.fillText(this.score, this.canvas.width - 100, topOffset + 35);
 
 
                 };
 
                 Game.prototype.drawBoard = function () {
-                    if (!this.canvas.getContext('2d')) {
-                        return;
-                    }
-
-                    var ctx = this.canvas.getContext('2d');
-
                     if (this.gameOver) {
-                        this.renderGameOver(ctx);
+                        this.renderGameOver();
                     } else if (this.paused) {
-                        this.renderPause(ctx);
+                        this.renderPause();
                     } else {
-                        this.renderGame(ctx);
+                        this.renderGame();
                     }
                 };
 
                 Game.prototype.renderPause = function (ctx) {
                     var text = "PAUSED";
-                    var textWidth = ctx.measureText(text).width;
-                    var centerHorizontal = (this.canvas.width / 2) - (textWidth) - 15;
-                    var centerVertical = (this.canvas.height / 2) - 40;
+                    var centerHorizontal = (this.paper.width / 2);
+                    var centerVertical = (this.paper.height / 2) - 40;
 
-                    ctx.font = "40px sans-serif";
-                    ctx.fillStyle = "#3b3b3b";
-                    ctx.fillText(text, centerHorizontal, centerVertical);
+                    var paused = this.paper.text(centerHorizontal, centerVertical, text); 
+                    paused.attr({ "font-size": 40, "font-family": "Helvetica Neue, Helvetica, Arial, sans-serif" });
+
+                    //ctx.font = "40px sans-serif";
+                    //ctx.fillStyle = "#3b3b3b";
+                    //ctx.fillText(text, centerHorizontal, centerVertical);
                 };
 
                 Game.prototype.renderGameOver = function (ctx) {
@@ -129,8 +163,10 @@ angular.module('game.solo.endless', [
                 };
 
                 Game.prototype.renderGame = function (ctx) {
-                    var CELL_WIDTH = this.canvas.width / 8;
-                    var CELL_HEIGHT = this.canvas.width / 8;
+                    var CELL_WIDTH = this.paper.width / 8;
+                    var CELL_HEIGHT = this.paper.width / 8;
+
+                    var self = this;
 
                     for (var i = 0; i < this.board.cells.length; i++) {
                         var cell = this.board.cells[i];
@@ -138,93 +174,45 @@ angular.module('game.solo.endless', [
                         var startX = cell.x * CELL_WIDTH;
                         var startY = cell.y * CELL_HEIGHT;
 
+                        var rect = this.paper.rect(startX, startY, CELL_WIDTH, CELL_HEIGHT);
+
+                        var fill;
                         if (cell.selected) {
-                            ctx.fillStyle = "#14e715"; 
+                            fill = "#14e715"; 
                         } else if (cell.type === 'active')  {
-                            ctx.fillStyle = getColorForType(cell.status);
+                            fill = getColorForType(cell.status);
                         } else if (cell.type === 'empty') {
-                            ctx.fillStyle = "#f4f5f4";
+                            fill = "#f4f5f4";
                         }
 
-                        if (cell.inPath) {
-                            ctx.fillStyle = "#000";
-                        }
+                        //if (cell.inPath) {
+                            //ctx.fillStyle = "#000";
+                        //}
 
-                        ctx.fillRect(startX, startY, CELL_WIDTH, CELL_HEIGHT);
-                        ctx.strokeStyle = "#aaa";
-                        ctx.lineWidth = 1;
-                        ctx.strokeRect(startX, startY, CELL_WIDTH, CELL_HEIGHT);
-                    }
-                };
+                        rect.attr({ "fill": fill, "stroke": "#AAA", "stroke-width": 1 });
 
-                Game.prototype.handleEvents = function () {
-                    var self = this;
-                    
-                    this.canvas.addEventListener('touchstart', function (event) {
-                        event.preventDefault();
+                        rect.touchstart(function (e) {
+                            event.preventDefault();
 
-                        var canvasLeftOffset = 10, 
-                            canvasTopOffset = 53;
+                            var canvasLeftOffset = 10, 
+                                canvasTopOffset = 53;
 
-                        var x = event.touches[0].pageX - canvasLeftOffset,
-                            y = event.touches[0].pageY - canvasTopOffset;
+                            var x = event.touches[0].pageX - canvasLeftOffset,
+                                y = event.touches[0].pageY - canvasTopOffset;
 
-                        if (y < self.canvas.width) {
                             self.handleBoardClick(x, y);
-                        } else {
-                            self.handleUIClick(x, y);
-                        }
-                    });
-                };
+                        });
 
-                Game.prototype.handleUIClick = function (x, y) {
-                    var ctx = this.canvas.getContext('2d');
-
-                    var exitX = 20;
-                    var exitY = this.canvas.height;
-                    var exitText = "EXIT";
-                    var exitWidth = ctx.measureText(exitText).width;
-
-                    var pausedX = this.canvas.width - 100;
-                    var pausedY = this.canvas.height;
-                    var pausedText = "PAUSE";
-                    var pausedWidth = ctx.measureText(pausedText).width;
-
-                    function isOnText(textX, textY, width) {
-                        return x > textX - 10
-                            && x < textX + width + 20
-                            && y > textY - 20
-                            && y < textY + 20;
+                        //ctx.fillRect(startX, startY, CELL_WIDTH, CELL_HEIGHT);
+                        //ctx.strokeStyle = "#aaa";
+                        //ctx.lineWidth = 1;
+                        //ctx.strokeRect(startX, startY, CELL_WIDTH, CELL_HEIGHT);
                     }
-
-                    if (isOnText(exitX, exitY, exitWidth)) {
-                        console.log('exit clicked');
-                        this.exitConfirmation = true;
-                    }
-
-                    if (isOnText(pausedX, pausedY, pausedWidth)) {
-                        this.paused = !this.paused;
-                    }
-
-                    if (this.paused) {
-                        var continueText = "RESUME";
-                        var continueWidth = ctx.measureText(continueText).width;
-                        var continueX = (this.canvas.width / 2) - (continueWidth / 4);
-                        var continueY = (this.canvas.height / 2) + 20;
-
-                        if (isOnText(continueX, continueY, continueWidth)) {
-                            this.paused = false;
-                        }
-
-                    } else {
-
-                    }
-
                 };
 
                 Game.prototype.handleBoardClick = function (x, y) {
-                    var CELL_WIDTH = this.canvas.width / 8;
-                    var CELL_HEIGHT = this.canvas.width / 8;
+                    var CELL_WIDTH = this.paper.width / 8;
+                    var CELL_HEIGHT = this.paper.width / 8;
 
                     var cellX = Math.floor(x / CELL_WIDTH),
                         cellY = Math.floor(y / CELL_HEIGHT);
@@ -262,6 +250,6 @@ angular.module('game.solo.endless', [
             return {
                 restrict: 'EAC',
                 link: link,
-                template: '<canvas id="main-canvas" width="" height=""></canvas>'
+                template: '<div id="main-canvas" width="" height=""></div>'
             };
         });

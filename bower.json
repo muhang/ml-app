@@ -11,7 +11,8 @@
     "angular-translate-loader-static-files": "~2.8.1",
     "angular-localForage": "~1.2.3",
     "ng-lodash": "~0.3.0",
-    "pathfinding": "~0.4.17"
+    "pathfinding": "~0.4.17",
+    "raphael": "~2.1.4"
   },
   "devDependencies": {
     "angular-mocks": "~1.4.5"
