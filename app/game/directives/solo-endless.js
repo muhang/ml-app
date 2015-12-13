@@ -7,15 +7,17 @@ angular.module('game.solo.endless', [
         .controller('SoloEndlessCtrl', function ($scope, $localstorage) {
             $scope.score = $localstorage.get('score', 0);
         })
-        .directive('soloEndless', function (BoardFactory) {
+        .directive('soloEndless', function (BoardFactory, $localstorage) {
 
             function link(scope, element, attr) {
+
                 function Game () {
-                    this.timePlayed = 0;
+                        this.timePlayed = 0;
                     this.isActive = false;
                     this.score = 0;
                     this.paused = false;
                     this.board = BoardFactory.makeEndlessBoard();
+                    this.exitConfirmation = false;
                     this.paper = null;
                     this.fps = 60;
                     this.gameOver = false;
@@ -39,16 +41,20 @@ angular.module('game.solo.endless', [
 
                     this.paper = new Raphael(canvas, cWidth, cHeight);
 
+                    var isRunning = function () {
+                        return !self.paused && !self.gameOver && !self.exitConfirmation;
+                    };
+
                     // set timer
                     setInterval(function () {
-                        if (!self.paused && !self.gameOver) {
+                        if (isRunning()) {
                             self.timePlayed++;
                         }
                     }, 1000);
 
                     // make new active cell 
                     setInterval(function () {
-                        if (!self.paused && !self.gameOver) {
+                        if (isRunning()) {
                             self.board.randomEmptyToActive();
                         }
                     }, this.generationInterval);
@@ -58,7 +64,7 @@ angular.module('game.solo.endless', [
                         if (self.board.isFull()) {
                             self.gameOver = true;
                         }
-                        if (!self.paused && !self.gameOver) {
+                        if (isRunning()) {
                             self.score += 1;
                         }
                     }, 500);
@@ -96,6 +102,13 @@ angular.module('game.solo.endless', [
 
                     var exit = this.paper.text(35, this.paper.height - 10, "EXIT");
                     exit.attr({ "font-size": 20, "font-family": "Helvetica Neue, Helvetica, Arial, sans-serif" });
+                    exit.touchstart(function (e) {
+                        if (self.gameOver) {
+                            self.exit();
+                        } else {
+                            self.exitConfirmation = true;
+                        }
+                    });
 
                     var timePlayed = this.paper.text(35, topOffset + 35, this.timePlayed);
                     timePlayed.attr({ "font-size": 16, "font-family": "Helvetica Neue, Helvetica, Arial, sans-serif" });
@@ -103,21 +116,27 @@ angular.module('game.solo.endless', [
                     var score = this.paper.text(this.paper.width - 50, topOffset, "SCORE");
                     score.attr({ "font-size": 20, "font-family": "Helvetica Neue, Helvetica, Arial, sans-serif" });
 
-                    var pausedText = this.paused ? "RESUME" : "PAUSED";
-                    var paused = this.paper.text(this.paper.width -50, this.paper.height - 10, pausedText);
-                    paused.attr({ "font-size": 20, "font-family": "Helvetica Neue, Helvetica, Arial, sans-serif" });
+                    if (!this.gameOver) {
 
-                    paused.touchstart(function (e) {
-                        e.preventDefault();
-                        self.paused = !self.paused;
-                    });
+                        var pausedText = this.paused ? "RESUME" : "PAUSE";
+                        var paused = this.paper.text(this.paper.width -50, this.paper.height - 10, pausedText);
+                        paused.attr({ "font-size": 20, "font-family": "Helvetica Neue, Helvetica, Arial, sans-serif" });
+
+                        paused.touchstart(function (e) {
+                            e.preventDefault();
+                            self.paused = !self.paused;
+                        });
+                    }
+
 
                     var scoreValue = this.paper.text(this.paper.width - 50, topOffset + 35, this.score);
                     scoreValue.attr({ "font-size": 16, "font-family": "Helvetica Neue, Helvetica, Arial, sans-serif" });
                 };
 
                 Game.prototype.drawBoard = function () {
-                    if (this.gameOver) {
+                    if (this.exitConfirmation) {
+                        this.renderExitConfirmation();
+                    } else if (this.gameOver) {
                         this.renderGameOver();
                     } else if (this.paused) {
                         this.renderPause();
@@ -126,7 +145,47 @@ angular.module('game.solo.endless', [
                     }
                 };
 
-                Game.prototype.renderPause = function (ctx) {
+                Game.prototype.exit = function () {
+                    
+                    var scores = JSON.parse($localstorage.get("endless", "[]"));
+                    
+                    scores.push({"score": this.score, "time": new Date()});
+
+                    scores.sort(function (a, b) { return a.score - b.score; });
+
+                    $localstorage.set("endless", JSON.stringify(scores));
+
+                    window.location.href = "/";
+                
+                };
+
+                Game.prototype.renderExitConfirmation = function () {
+                    var self = this;
+
+                    var text = "ABANDON GAME?";
+                    var centerHorizontal = (this.paper.width / 2);
+                    var centerVertical = (this.paper.height / 2) - 40;
+
+                    var message = this.paper.text(centerHorizontal, centerVertical, text); 
+                    message.attr({ "font-size": 40, "font-family": "Helvetica Neue, Helvetica, Arial, sans-serif" });
+
+                    var yes = this.paper.text(centerHorizontal - 100, centerVertical + 100, "YES");
+                    var no = this.paper.text(centerHorizontal + 100, centerVertical + 100, "NO");
+
+                    yes.attr({ "font-size": 20, "font-family": "Helvetica Neue, Helvetica, Arial, sans-serif" });
+                    no.attr({ "font-size": 20, "font-family": "Helvetica Neue, Helvetica, Arial, sans-serif" });
+
+                    yes.touchstart(function (e) {
+                        e.preventDefault();
+                        self.exit();
+                    });
+                    no.touchstart(function (e) {
+                        self.exitConfirmation = false;
+                    });
+                }
+
+
+                Game.prototype.renderPause = function () {
                     var text = "PAUSED";
                     var centerHorizontal = (this.paper.width / 2);
                     var centerVertical = (this.paper.height / 2) - 40;
@@ -135,7 +194,7 @@ angular.module('game.solo.endless', [
                     paused.attr({ "font-size": 40, "font-family": "Helvetica Neue, Helvetica, Arial, sans-serif" });
                 };
 
-                Game.prototype.renderGameOver = function (ctx) {
+                Game.prototype.renderGameOver = function () {
                     var text = "GAME OVER";
                     var centerHorizontal = (this.paper.width / 2);
                     var centerVertical = (this.paper.height / 2) - 40;
@@ -144,7 +203,7 @@ angular.module('game.solo.endless', [
                     paused.attr({ "font-size": 40, "font-family": "Helvetica Neue, Helvetica, Arial, sans-serif" });
                 };
 
-                Game.prototype.renderGame = function (ctx) {
+                Game.prototype.renderGame = function () {
                     var CELL_WIDTH = this.paper.width / 8;
                     var CELL_HEIGHT = this.paper.width / 8;
                     var fullCurve = CELL_WIDTH / 2;

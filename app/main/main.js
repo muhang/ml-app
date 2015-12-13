@@ -47,6 +47,15 @@ angular.module('main', [
           }
         }
       })
+      .state('highscores', {
+        url: '/highscores',
+        views: {
+          main: {
+            templateUrl: 'main/templates/highscores.html',
+            controller: 'HighScoresCtrl'
+          }
+        }
+      })
 
       .state('singleplayer', {
         url: '/singleplayer',

@@ -20,3 +20,8 @@ $ionicons-font-path: "../assets/fonts" !default;
 
 // Include all of Ionic
 @import "../../bower_components/ionic/scss/ionic";
+
+h2.score-time {
+    float: right;
+    margin-top: -42px;
+}

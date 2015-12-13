@@ -1,0 +1,12 @@
+<ion-view view-title="High Scores">
+  <ion-content class="padding">
+      <h2>Endless</h2>
+      <ion-list>
+          <ion-item ng-repeat="score in endlessScores">
+              <h2>Score: <strong>{{score.score}}</strong></h2>
+              <h2>Game Length: <strong>{{score.timePlayed}}</strong></h2>
+              <h2 class="score-time">{{score.formattedTime}}</h2>
+          </ion-item>
+      </ion-list>
+  </ion-content>
+</ion-view>
