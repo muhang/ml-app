@@ -37,7 +37,7 @@ angular.module('game.cell', [])
             return new Cell(x, y, 'empty');
         };
 
-        CellGenerator.prototype.generateActiveCell = function (x, y, type) {
+        CellGenerator.prototype.generateActiveCell = function (x, y) {
             return new Cell(x, y, 'active');
         };
 

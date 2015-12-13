@@ -10,6 +10,6 @@ angular.module('main.controllers.highscores', [
         $scope.endlessScores = $scope.endlessScores.slice(0, 10);
 
         for (var i = 0; i < $scope.endlessScores.length; i++) {
-            $scope.endlessScores[i]['formattedTime'] = moment($scope.endlessScores[i]['time']).format("MMM Do");
+            $scope.endlessScores[i]['formattedTime'] = window.moment($scope.endlessScores[i]['time']).format("MMM Do");
         }
     });   

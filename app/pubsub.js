@@ -1,3 +1,5 @@
+'use strict';
+
 window.pubsub = (function () {
     var eventToListeners = {};
 
@@ -14,12 +16,10 @@ window.pubsub = (function () {
                    try {
                        eventToListeners[event][i].call(null, args);
                    } catch (e) {
-                       if (console && console.error) {
-                           console.error(e);
-                       }
+                       window.console.error(e);
                    }
                 }
             }
         }
     };
-}());
+})();

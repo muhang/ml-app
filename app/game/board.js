@@ -28,7 +28,7 @@ angular.module('game.board', [
                 }
                 matrix.push(mRow);
             }
-            this.grid = new PF.Grid(this.width, this.height, matrix);
+            this.grid = new window.PF.Grid(this.width, this.height, matrix);
         };
 
         Board.prototype.initializeCells = function () {
@@ -129,8 +129,8 @@ angular.module('game.board', [
             var matchedType = cellA.status;
 
             // publish match event
-            var matchEvent = new CustomEvent('match', { cells: [ cellA, cellB ] });
-            pubsub.pub("match");
+            new CustomEvent('match', { cells: [ cellA, cellB ] });
+            window.pubsub.pub("match");
             
             // get array of cells in path
             var pathCells = [];
@@ -228,7 +228,7 @@ angular.module('game.board', [
             this.grid.setWalkableAt(cell2.x, cell2.y, true);
 
             var gridBackup = this.grid.clone();
-            var finder = new PF.AStarFinder();
+            var finder = new window.PF.AStarFinder();
             var path = finder.findPath(cell1.x, cell1.y, cell2.x, cell2.y, this.grid);
 
             this.grid = gridBackup;

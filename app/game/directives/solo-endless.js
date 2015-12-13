@@ -9,10 +9,10 @@ angular.module('game.solo.endless', [
         })
         .directive('soloEndless', function (BoardFactory, $localstorage) {
 
-            function link(scope, element, attr) {
+            function link() {
 
                 function Game () {
-                        this.timePlayed = 0;
+                    this.timePlayed = 0;
                     this.isActive = false;
                     this.score = 0;
                     this.paused = false;
@@ -28,7 +28,7 @@ angular.module('game.solo.endless', [
                     var self = this;
                     var windowWidth = window.innerWidth;
 
-                    pubsub.sub("match", function () {
+                    window.pubsub.sub("match", function () {
                         self.score += 10;
                     });
 
@@ -39,7 +39,7 @@ angular.module('game.solo.endless', [
                     canvas.width = windowWidth - 20;
                     canvas.height = canvas.width + 150;
 
-                    this.paper = new Raphael(canvas, cWidth, cHeight);
+                    this.paper = new window.Raphael(canvas, cWidth, cHeight);
 
                     var isRunning = function () {
                         return !self.paused && !self.gameOver && !self.exitConfirmation;
@@ -103,6 +103,7 @@ angular.module('game.solo.endless', [
                     var exit = this.paper.text(35, this.paper.height - 10, "EXIT");
                     exit.attr({ "font-size": 20, "font-family": "Helvetica Neue, Helvetica, Arial, sans-serif" });
                     exit.touchstart(function (e) {
+                        e.preventDefault();
                         if (self.gameOver) {
                             self.exit();
                         } else {
@@ -180,6 +181,7 @@ angular.module('game.solo.endless', [
                         self.exit();
                     });
                     no.touchstart(function (e) {
+                        e.preventDefault();
                         self.exitConfirmation = false;
                     });
                 }
@@ -251,7 +253,7 @@ angular.module('game.solo.endless', [
                         rect.attr(attributes);
 
                         rect.touchstart(function (e) {
-                            event.preventDefault();
+                            e.preventDefault();
 
                             var canvasLeftOffset = 10, 
                                 canvasTopOffset = 53;

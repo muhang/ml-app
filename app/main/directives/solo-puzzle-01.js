@@ -9,8 +9,7 @@ angular.module('main.directives.solopuzzleone', [
   }])
   .directive('soloPuzzleOne', function () {
 
-    function link (scope, element, attrs) {
-      console.log('link');
+    function link () {
     }
 
     return {
