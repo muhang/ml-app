@@ -18,6 +18,7 @@ angular.module('game.solo.endless', [
                     this.board = BoardFactory.makeEndlessBoard();
                     this.canvas = null;
                     this.fps = 60;
+                    this.gameOver = false;
                 }
 
 
@@ -37,7 +38,7 @@ angular.module('game.solo.endless', [
 
                     // set timer
                     setInterval(function () {
-                        if (!self.pause) {
+                        if (!self.pause && !self.gameOver) {
 
                             // make new active cell every other tick
                             if (self.timePlayed%2 === 0) {
@@ -96,6 +97,30 @@ angular.module('game.solo.endless', [
 
                     var ctx = this.canvas.getContext('2d');
 
+                    if (this.gameOver) {
+                        this.renderGameOver(ctx);
+                    } else if (this.pause) {
+                        this.renderPause(ctx);
+                    } else {
+                        this.renderGame(ctx);
+                    }
+                };
+
+                Game.prototype.renderPause = function (ctx) {
+                    var text = "PAUSED";
+                    var textWidth = ctx.measureText(text);
+                    var center = (this.canvas.width / 2) - (textWidth / 2);
+
+                    ctx.font = "40px sans-serif";
+                    ctx.fillStyle = "#3b3b3b";
+                    ctx.fillText(text, center, this.canvas.height / 2);
+                };
+
+                Game.prototype.renderGameOver = function (ctx) {
+
+                };
+
+                Game.prototype.renderGame = function (ctx) {
                     for (var i = 0; i < this.board.cells.length; i++) {
                         var cell = this.board.cells[i];
                         // get starting pixel location based on coordinate values
@@ -153,7 +178,7 @@ angular.module('game.solo.endless', [
                 };
 
                 Game.prototype.handleUIClick = function (x, y) {
-
+                    
                 };
 
                 var getColorForType = function (type) {
