@@ -71,6 +71,9 @@ angular.module('game.board', [
             });
 
             this.grid.setWalkableAt(randomEmptyCell.x, randomEmptyCell.y, false);
+
+            var newActiveEvent = new CustomEvent('newActive', { 'detail': randomEmptyCell });
+            window.pubsub.pub('newActive', newActiveEvent);
         };
 
         Board.prototype.activeToEmpty = function (cell) {
@@ -92,6 +95,9 @@ angular.module('game.board', [
         Board.prototype.handleSelection = function (x, y) {
             var cell = this.getCell(x, y);
             cell = cell[0];
+
+            new CustomEvent('selection', { 'cell': cell });
+            window.pubsub.pub('selection');
 
             if (cell.type !== 'active') {
                 this.removeSelection();
@@ -144,7 +150,8 @@ angular.module('game.board', [
             pathCells = pathCells.sort(function (a, b) { return a.pathNumber - b.pathNumber; });
             
             var addDelay = 0;
-            var timeInPath = this.pathDelay + 750;
+            var timeInPath = this.pathDelay + 500;
+
 
             // animate path
             for (var j = 0; j < pathCells.length; j++) {
@@ -158,6 +165,9 @@ angular.module('game.board', [
 
                         pathCells[idx].status = matchedType;
                         pathCells[idx].inPath = true;
+
+                        new CustomEvent('enteredPath', { 'cell': pathCells[idx] });
+                        window.pubsub.pub('enteredPath');
                     }, addDelay);
 
                     setTimeout(function () {
@@ -168,6 +178,9 @@ angular.module('game.board', [
                         pathCells[idx].status = 0;
                         pathCells[idx].inPath = false;
                         pathCells[idx].pathNumber = 0;
+
+                        new CustomEvent('leftPath', { 'cell': pathCells[idx] });
+                        window.pubsub.pub('leftPath');
 
                         cellA.successState = false;
                         cellB.successState = false;

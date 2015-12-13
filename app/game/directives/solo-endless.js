@@ -69,23 +69,6 @@ angular.module('game.solo.endless', [
                         }
                     }, 500);
 
-                    // TODO intilaize event handlers
-                    var maxTime = 0;
-
-                    setInterval(function () {
-                        for (var i = 0; i < self.board.cells.length; i++) {
-                            var cell = self.board.cells[i];
-                            if (cell.inPath) {
-                                cell.timeInPath++;
-                                if (cell.timeInPath > maxTime) {
-                                    maxTime = cell.timeInPath;
-                                }
-                            } else {
-                                cell.timeInPath = 0;
-                            }
-                        }
-                    }, 50);
-
                     setInterval(function () {
                         self.paper.clear();
                         self.drawBoard();
@@ -211,7 +194,7 @@ angular.module('game.solo.endless', [
                     var fullCurve = CELL_WIDTH / 2;
 
                     var self = this;
-                    var totalTimeInPath = this.board.pathDelay + 759;
+                    var totalTimeInPath = this.board.pathDelay + 500;
 
                     for (var i = 0; i < this.board.cells.length; i++) {
                         var cell = this.board.cells[i];
@@ -220,37 +203,29 @@ angular.module('game.solo.endless', [
                         var startY = cell.y * CELL_HEIGHT;
 
                         var borderRadius = 0;
-                        if (cell.timeInPath > 0) {
-                            var time = cell.timeInPath * 50;
-                            var percentComplete = Math.floor( (time / totalTimeInPath) * 100 );
-                            var percentOfHalf;
-                            
-                            if (percentComplete < 50) {
-                                percentOfHalf = percentComplete / 50;
-                            } else {
-                                percentOfHalf = (50 - (percentComplete - 50)) / 50;
-                            }
-                            borderRadius = percentOfHalf * fullCurve;
+
+                        if (cell.inPath || cell.selected) {
+                            borderRadius = Math.floor(fullCurve);
                         } else {
                             borderRadius = 5;
                         }
 
+
                         var rect = this.paper.rect(startX, startY, CELL_WIDTH, CELL_HEIGHT, borderRadius);
 
-                        var fill;
-                        if (cell.selected) {
-                            fill = "#14e715"; 
-                        } else {
-                            fill = getColorForType(cell.status);
-                        }
-                        //} else if (cell.type === 'active')  {
-                            //fill = getColorForType(cell.status);
-                        //} else if (cell.type === 'empty') {
-                            //fill = "#f4f5f4";
-                        //}
+                        var fill = getColorForType(cell.status);
 
                         var attributes = { "fill": fill, "stroke": "#FFF", "stroke-width": 5 };
                         rect.attr(attributes);
+
+                        (function (cell) {
+                            window.pubsub.sub('newActive', function (e) {
+                            console.log(cell);
+                                if (e.detail.x === cell.x && e.detail.y === cell.y) {
+                                    console.log(cell);
+                                }
+                            });
+                        })(cell);
 
                         rect.touchstart(function (e) {
                             e.preventDefault();
