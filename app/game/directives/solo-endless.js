@@ -39,13 +39,6 @@ angular.module('game.solo.endless', [
 
                     this.paper = new Raphael(canvas, cWidth, cHeight);
 
-
-
-                    //this.canvas.width = windowWidth - 20;
-                    //this.canvas.height = this.canvas.width + 150;
-
-                    //this.handleEvents();
-
                     // set timer
                     setInterval(function () {
                         if (!self.paused && !self.gameOver) {
@@ -62,16 +55,32 @@ angular.module('game.solo.endless', [
 
                     // auto-incrementing score for staying alive
                     setInterval(function () {
+                        if (this.board.isFull()) {
+                            this.gameOver = true;
+                        }
                         if (!self.paused && !self.gameOver) {
                             self.score += 1;
                         }
                     }, 500);
 
                     // TODO intilaize event handlers
+                    var maxTime = 0;
 
                     setInterval(function () {
-                        //var ctx = self.canvas.getContext('2d');
-                        //ctx.clearRect(0, 0, self.canvas.offsetHeight, self.canvas.offsetHeight);
+                        for (var i = 0; i < self.board.cells.length; i++) {
+                            var cell = self.board.cells[i];
+                            if (cell.inPath) {
+                                cell.timeInPath++;
+                                if (cell.timeInPath > maxTime) {
+                                    maxTime = cell.timeInPath;
+                                }
+                            } else {
+                                cell.timeInPath = 0;
+                            }
+                        }
+                    }, 50);
+
+                    setInterval(function () {
                         self.paper.clear();
                         self.drawBoard();
                         self.drawUI();
@@ -105,32 +114,6 @@ angular.module('game.solo.endless', [
 
                     var scoreValue = this.paper.text(this.paper.width - 50, topOffset + 35, this.score);
                     scoreValue.attr({ "font-size": 16, "font-family": "Helvetica Neue, Helvetica, Arial, sans-serif" });
-
-                    //if (!this.canvas.getContext('2d')) {
-                        //return;
-                    //}
-
-                    //var ctx = this.canvas.getContext('2d');
-
-                    //var topOffset = this.canvas.width + 48;
-
-                    //ctx.font = "20px sans-serif";
-                    //ctx.fillStyle = "#3b3b3b";
-                    //ctx.strokeStyle = "#3b3b3b";
-
-                    //ctx.fillText("TIME", 20, topOffset);
-                    //ctx.fillText("SCORE", this.canvas.width - 100, topOffset);
-
-
-                    //ctx.fillText("EXIT", 20, this.canvas.height);
-                    //var pauseText = this.paused ? "RESUME" : "PAUSE";
-                    //ctx.fillText(pauseText, this.canvas.width - 100, this.canvas.height);
-
-                    //ctx.font = "16px sans-serif";
-                    //ctx.fillText(this.timePlayed, 20, topOffset + 35);
-                    //ctx.fillText(this.score, this.canvas.width - 100, topOffset + 35);
-
-
                 };
 
                 Game.prototype.drawBoard = function () {
@@ -150,23 +133,24 @@ angular.module('game.solo.endless', [
 
                     var paused = this.paper.text(centerHorizontal, centerVertical, text); 
                     paused.attr({ "font-size": 40, "font-family": "Helvetica Neue, Helvetica, Arial, sans-serif" });
-
-                    //ctx.font = "40px sans-serif";
-                    //ctx.fillStyle = "#3b3b3b";
-                    //ctx.fillText(text, centerHorizontal, centerVertical);
                 };
 
                 Game.prototype.renderGameOver = function (ctx) {
-                    ctx.font = "40px sans-serif";
-                    ctx.fillStyle = "#3b3b3b";
-                    ctx.fillText(text, center, this.canvas.height / 2);
+                    var text = "GAME OVER";
+                    var centerHorizontal = (this.paper.width / 2);
+                    var centerVertical = (this.paper.height / 2) - 40;
+
+                    var paused = this.paper.text(centerHorizontal, centerVertical, text); 
+                    paused.attr({ "font-size": 40, "font-family": "Helvetica Neue, Helvetica, Arial, sans-serif" });
                 };
 
                 Game.prototype.renderGame = function (ctx) {
                     var CELL_WIDTH = this.paper.width / 8;
                     var CELL_HEIGHT = this.paper.width / 8;
+                    var fullCurve = CELL_WIDTH / 2;
 
                     var self = this;
+                    var totalTimeInPath = this.board.pathDelay + 759;
 
                     for (var i = 0; i < this.board.cells.length; i++) {
                         var cell = this.board.cells[i];
@@ -174,22 +158,38 @@ angular.module('game.solo.endless', [
                         var startX = cell.x * CELL_WIDTH;
                         var startY = cell.y * CELL_HEIGHT;
 
-                        var rect = this.paper.rect(startX, startY, CELL_WIDTH, CELL_HEIGHT);
+                        var borderRadius = 0;
+                        if (cell.timeInPath > 0) {
+                            var time = cell.timeInPath * 50;
+                            var percentComplete = Math.floor( (time / totalTimeInPath) * 100 );
+                            var percentOfHalf;
+                            
+                            if (percentComplete < 50) {
+                                percentOfHalf = percentComplete / 50;
+                            } else {
+                                percentOfHalf = (50 - (percentComplete - 50)) / 50;
+                            }
+                            borderRadius = percentOfHalf * fullCurve;
+                        } else {
+                            borderRadius = 5;
+                        }
+
+                        var rect = this.paper.rect(startX, startY, CELL_WIDTH, CELL_HEIGHT, borderRadius);
 
                         var fill;
                         if (cell.selected) {
                             fill = "#14e715"; 
-                        } else if (cell.type === 'active')  {
+                        } else {
                             fill = getColorForType(cell.status);
-                        } else if (cell.type === 'empty') {
-                            fill = "#f4f5f4";
                         }
-
-                        //if (cell.inPath) {
-                            //ctx.fillStyle = "#000";
+                        //} else if (cell.type === 'active')  {
+                            //fill = getColorForType(cell.status);
+                        //} else if (cell.type === 'empty') {
+                            //fill = "#f4f5f4";
                         //}
 
-                        rect.attr({ "fill": fill, "stroke": "#AAA", "stroke-width": 1 });
+                        var attributes = { "fill": fill, "stroke": "#FFF", "stroke-width": 5 };
+                        rect.attr(attributes);
 
                         rect.touchstart(function (e) {
                             event.preventDefault();
@@ -202,11 +202,6 @@ angular.module('game.solo.endless', [
 
                             self.handleBoardClick(x, y);
                         });
-
-                        //ctx.fillRect(startX, startY, CELL_WIDTH, CELL_HEIGHT);
-                        //ctx.strokeStyle = "#aaa";
-                        //ctx.lineWidth = 1;
-                        //ctx.strokeRect(startX, startY, CELL_WIDTH, CELL_HEIGHT);
                     }
                 };
 
@@ -222,6 +217,7 @@ angular.module('game.solo.endless', [
 
                 var getColorForType = function (type) {
                     var hash = {
+                        0: '#F4F5F4',
                         1: '#E53935',
                         2: '#8E24AA',
                         3: '#43A047',

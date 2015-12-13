@@ -9,6 +9,7 @@ angular.module('game.cell', [])
             this.status = 0;
             this.selected = false;
             this.inPath = false;
+            this.timeInPath = 0;
             this.pathNumber = 0;
             this.successState = false;
             this.errorState = false;
