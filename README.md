@@ -1,6 +1,9 @@
 # MatchLink
 Click matching tiles with an open path between them to clear them from the board.
 
+# Building
+Instructions for builing can be found [here](https://github.com/mwaylabs/generator-m-ionic/blob/master/docs/intro/quick_start.md).
+
 ## TODO
 - Abstract most of Game runtime functionality out of game/directions/solo-endless
 - Create puzzle levels
