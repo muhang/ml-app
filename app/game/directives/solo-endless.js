@@ -218,14 +218,14 @@ angular.module('game.solo.endless', [
                         var attributes = { "fill": fill, "stroke": "#FFF", "stroke-width": 5 };
                         rect.attr(attributes);
 
-                        (function (cell) {
-                            window.pubsub.sub('newActive', function (e) {
-                            console.log(cell);
-                                if (e.detail.x === cell.x && e.detail.y === cell.y) {
-                                    console.log(cell);
-                                }
-                            });
-                        })(cell);
+                        //(function (cell) {
+                            //window.pubsub.sub('newActive', function (e) {
+                            //console.log(cell);
+                                //if (e.detail.x === cell.x && e.detail.y === cell.y) {
+                                    //console.log(cell);
+                                //}
+                            //});
+                        //})(cell);
 
                         rect.touchstart(function (e) {
                             e.preventDefault();
