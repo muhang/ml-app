@@ -194,7 +194,6 @@ angular.module('game.solo.endless', [
                     var fullCurve = CELL_WIDTH / 2;
 
                     var self = this;
-                    var totalTimeInPath = this.board.pathDelay + 500;
 
                     for (var i = 0; i < this.board.cells.length; i++) {
                         var cell = this.board.cells[i];
