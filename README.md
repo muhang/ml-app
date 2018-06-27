@@ -1,8 +1,19 @@
 # MatchLink
-Click matching tiles with an open path between them to clear them from the board.
+Mobile game where the player clicks matching tiles with an open path between them to clear them from the board.
+
+Built using Angular 1.x, gulp, and bower on the front-end, and Ionic / Cordova for mobile support.
 
 # Building
-Instructions for builing can be found [here](https://github.com/mwaylabs/generator-m-ionic/blob/master/docs/intro/quick_start.md).
+- Make sure you have gulp and bower installed: `npm i -g gulp bower`
+- Install dependencies
+  * `npm install`
+  * `bower install`
+
+Framework summary can be found [here](https://github.com/mwaylabs/generator-m-ionic/blob/master/docs/intro/quick_start.md).
+
+# Running
+- Run application with `gulp watch`
+- On a mobile device, visit local address provided by the above command.
 
 ## TODO
 - Abstract most of Game runtime functionality out of game/directions/solo-endless
